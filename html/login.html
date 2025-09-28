@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../css/style.css">
+  <title>Вход</title>
+</head>
+<body>
+  <header>
+    <nav>
+      <img src="https://bsurjkwdjsnwwodkxdtu.supabase.co/storage/v1/object/public/img/logo.png" alt="logo" class="logo">
+      <div class="glavnaya">
+        <a href="#">Главная</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="content1">
+      <form class="login-form">
+        <h1>Вход</h1>
+        <input type="hidden" name="mode" value="login">
+        <input name="login" type="text" placeholder="Логин" required>
+        <input name="password" type="password" placeholder="Пароль" required>
+        <button type="submit" class="btn">Войти</button>
+      </form>
+      <button id="switch-auth">Нет аккаунта? Зарегистрироваться</button>
+    </div>
+  </main>
+
+  <footer>
+    <nav>
+      <div class="foot">
+        <p>Практическая работа 2 // Чувакина Влада // Цветочный магазин</p>
+      </div>
+    </nav>
+  </footer>
+
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

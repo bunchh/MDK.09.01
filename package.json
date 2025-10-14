@@ -1,0 +1,23 @@
+{
+  "name": "mdk.09.01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bunchh/MDK.09.01.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bunchh/MDK.09.01/issues"
+  },
+  "homepage": "https://github.com/bunchh/MDK.09.01#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

@@ -1,96 +1,129 @@
 import { validateForm, validateName } from '../server/validation.js';
-import { loginUser, registerUser } from '../server/auth.js';
+import { loginUser, registerUser, getCurrentUser, logoutUser } from '../server/auth.js';
 import { renderProductList, getProductById } from '../server/products.js';
 
-const loginForm = document.querySelector('form.login-form');
-if (loginForm) {
-  const loginInput = loginForm.querySelector('input[name="login"]');
-  const passwordInput = loginForm.querySelector('input[name="password"]');
-  const nameInput = loginForm.querySelector('input[name="name"]');
-  const modeToggle = loginForm.querySelector('input[name="mode"]'); 
-  loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const login = loginInput.value.trim();
-    const password = passwordInput.value;
-    const name = nameInput ? nameInput.value.trim() : '';
-    const mode = modeToggle ? modeToggle.value : 'login'; 
+document.addEventListener('DOMContentLoaded', async () => {
 
-    const { isValid, loginError, passwordError } = validateForm(login, password);
-    if (!isValid) {
-      alert([loginError, passwordError].filter(Boolean).join('\\n'));
-      return;
-    }
-    if (mode === 'login') {
-      const res = loginUser(login, password);
-      if (res.success) {
-        alert('Вход успешен!');
-        window.location.href = 'index.html';
-      } else {
-        alert(res.error);
-      }
+  const authBtn = document.querySelector('.auth-btn');
+  if (authBtn) {
+    const user = getCurrentUser();
+    if (user) {
+      authBtn.textContent = 'Выйти';
+      authBtn.href = '#';
+      authBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        logoutUser();
+        window.location.reload();
+      });
     } else {
-      const nameError = validateName(name);
-      if (nameError) {
-        alert(nameError);
+      authBtn.textContent = 'Войти';
+      authBtn.href = './login.html';
+    }
+  }
+
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const switchBtn = document.getElementById('switch-auth');
+
+  if (loginForm && registerForm && switchBtn) {
+    switchBtn.addEventListener('click', () => {
+    if (loginForm.style.display === 'none') {
+        loginForm.style.display = 'flex';
+        registerForm.style.display = 'none';
+        switchBtn.textContent = "Нет аккаунта? Зарегистрироваться";
+      } else {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'flex';
+        switchBtn.textContent = "Уже есть аккаунт? Войти";
+      }
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const login = document.getElementById('loginLogin').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      const { isValid, loginError, passwordError } = validateForm(login, password);
+      if (!isValid) {
+        alert([loginError, passwordError].filter(Boolean).join('\n'));
         return;
       }
-      const res = registerUser(login, password, name);
-      if (res.success) {
-        alert('Регистрация прошла успешно!');
-        window.location.href = 'index.html';
-      } else {
-        alert(res.error);
-      }
-    }
-  });
 
-  const switchBtn = document.querySelector('#switch-auth');
-  if (switchBtn) {
-    switchBtn.addEventListener('click', () => {
-      const current = modeToggle.value;
-      if (current === 'login') {
-        modeToggle.value = 'register';
-        switchBtn.textContent = 'Уже есть аккаунт? Войти';
-        nameInput.style.display = 'block';
-        loginForm.querySelector('h1').textContent = 'Регистрация';
-        loginForm.querySelector('button').textContent = 'Зарегистрироваться';
+      const result = await loginUser(login, password);
+      if (result.success) {
+        localStorage.setItem('currentUser', JSON.stringify(result.user));
+        alert(`Добро пожаловать, ${result.user.name}!`);
+        window.location.href = './index.html';
       } else {
-        modeToggle.value = 'login';
-        switchBtn.textContent = 'Нет аккаунта? Зарегистрироваться';
-        nameInput.style.display = 'none';
-        loginForm.querySelector('h1').textContent = 'Вход';
-        loginForm.querySelector('button').textContent = 'Войти';
+        alert(result.error);
+      }
+    });
+
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const login = document.getElementById('regLogin').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      const nameError = validateName(name);
+      const { isValid, loginError, passwordError } = validateForm(login, password);
+
+      if (nameError || !isValid) {
+        alert([nameError, loginError, passwordError].filter(Boolean).join('\n'));
+        return;
+      }
+
+      const result = await registerUser(login, password, name);
+      if (result.success) {
+        localStorage.setItem('currentUser', JSON.stringify(result.user));
+        alert(`Пользователь ${name} зарегистрирован!`);
+        window.location.href = './index.html';
+      } else {
+        alert(result.error);
       }
     });
   }
-}
 
-if (document.querySelector('.cards')) {
-  const container = document.querySelector('.cards');
-  renderProductList(container);
-}
+  const cardsContainer = document.querySelector('.cards');
+  if (cardsContainer) {
+    await renderProductList(cardsContainer);
+  }
 
-// Страница товара (product.html)
-if (document.querySelector('.product-page')) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const productId = urlParams.get('id');
+  const productPage = document.querySelector('.product-page');
+  if (productPage) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
 
-  if (productId) {
-    const product = getProductById(productId);
-    if (product) {
-      document.querySelector('.product-page').innerHTML = `
-        <div class="kartochkatovara">
-          <img src="${product.image}" alt="${product.name}" class="fotochka">
-          <div class="tovar">
-            <h1 class="nazvanie">${product.name}</h1>
-            <p class="opisanie">${product.description}</p>
-            <p class="price">${(product.price).toFixed(0)} ₽</p>
-            <button class="vkorzinu">Добавить в корзину</button>
+    if (productId) {
+      const product = await getProductById(productId);
+      if (product) {
+        productPage.innerHTML = `
+          <div class="kartochkatovara">
+            <img src="${product.image}" alt="${product.name}" class="fotochka">
+            <div class="tovar">
+              <h1 class="nazvanie">${product.name}</h1>
+              <p class="opisanie">${product.description}</p>
+              <p class="price">${(product.price).toFixed(0)} ₽</p>
+              <button class="vkorzinu">Добавить в корзину</button>
+            </div>
           </div>
-        </div>
-      `;
-    } else {
-      document.querySelector('.product-page').innerHTML = "<p>Товар не найден</p>";
+        `;
+      } else {
+        productPage.innerHTML = '<p>Товар не найден</p>';
+      }
     }
   }
+
+});
+
+
+// кнопка админки
+const user = getCurrentUser();
+if (user && user.role === 'admin') {
+    const navbar = document.getElementById('navbar');
+    const link = document.createElement('a');
+    link.textContent = 'Панель администратора';
+    link.href = 'admin.html';
+    link.classList.add('admin-btn');
+    navbar.appendChild(link);
 }

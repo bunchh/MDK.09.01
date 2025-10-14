@@ -1,38 +1,51 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+  <script type="module" src="../js/main.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="https://bsurjkwdjsnwwodkxdtu.supabase.co/storage/v1/object/public/img/logo.png" type="image/x-icon">
   <link rel="stylesheet" href="../css/style.css">
   <title>Вход</title>
 </head>
 <body>
   <header>
     <nav>
-      <img src="https://bsurjkwdjsnwwodkxdtu.supabase.co/storage/v1/object/public/img/logo.png" alt="logo" class="logo">
+      <a href="./index.html"><img src="https://bsurjkwdjsnwwodkxdtu.supabase.co/storage/v1/object/public/img/logo.png" alt="logo" class="logo"></a>
       <div class="glavnaya">
-        <a href="#">Главная</a>
+        <a href="./index.html" class="home-btn">Главная</a>
       </div>
     </nav>
   </header>
 
   <main>
-    <div class="content1">
-      <form class="login-form">
-        <h1>Вход</h1>
-        <input type="hidden" name="mode" value="login">
-        <input name="login" type="text" placeholder="Логин" required>
-        <input name="password" type="password" placeholder="Пароль" required>
-        <button type="submit" class="btn">Войти</button>
-      </form>
-      <button id="switch-auth">Нет аккаунта? Зарегистрироваться</button>
-    </div>
-  </main>
+  <div class="content1">
+    <form id="loginForm" class="login-form">
+      <h1>Вход</h1>
+      <input type="text" id="loginLogin" placeholder="Логин" required>
+      <input type="password" id="loginPassword" placeholder="Пароль" required>
+      <button type="submit" class="btn">Войти</button>
+    </form>
+
+    <form id="registerForm" class="register-form" style="display: none;">
+      <h1>Регистрация</h1>
+      <input type="text" id="regName" placeholder="Введите имя" required>
+
+      <input type="text" id="regLogin" placeholder="Введите логин" required>
+
+      <input type="password" id="regPassword" placeholder="Введите пароль" required>
+
+      <button type="submit" class="btn">Зарегистрироваться</button>
+    </form>
+
+    <button id="switch-auth">Нет аккаунта? Зарегистрироваться</button>
+  </div>
+</main>
 
   <footer>
     <nav>
       <div class="foot">
-        <p>Практическая работа 2 // Чувакина Влада // Цветочный магазин</p>
+        <p>Практическая работа 3 // Чувакина Влада // Цветочный магазин</p>
       </div>
     </nav>
   </footer>

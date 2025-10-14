@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "login": "admin",
+    "password": "123456",
+    "name": "Админ",
+    "role": "admin"
+  },
+  {
+    "id": 2,
+    "login": "user",
+    "password": "password",
+    "name": "Пользователь123",
+    "role": "user"
+  },
+  {
+    "login": "sdfsdf",
+    "password": "qweqweqwe",
+    "name": "qwewqe",
+    "role": "user",
+    "id": 3
+  },
+  {
+    "login": "adminchk",
+    "password": "436375ррпр",
+    "name": "Влада",
+    "role": "admin",
+    "id": 4
+  }
+]

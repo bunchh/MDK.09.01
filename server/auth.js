@@ -1,22 +1,39 @@
-import { users } from './mockDB.js';
+export async function loginUser(login, password) {
+  const res = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ login, password })
+  });
+  const data = await res.json();
 
-export function loginUser(login, password) {
-  const user = users.find(u => u.login === login && u.password === password);
-  if (user) {
-    localStorage.setItem('currentUser', JSON.stringify(user));
-    return { success: true, user };
+  if (data.success && data.user) {
+    localStorage.setItem('currentUser', JSON.stringify(data.user));
   }
-  return { success: false, error: 'Неверный логин или пароль' };
+
+  return data;
 }
 
-export function registerUser(login, password, name) {
-  if (users.find(u => u.login === login)) {
-    return { success: false, error: 'Пользователь с таким логином уже существует' };
+export async function registerUser(login, password, name) {
+  const newUser = {
+    login,
+    password,
+    name,
+    role: 'user'
+  };
+
+  const res = await fetch('/api/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newUser)
+  });
+
+  const data = await res.json();
+
+  if (data.success && data.user) {
+    localStorage.setItem('currentUser', JSON.stringify(data.user));
   }
-  const newUser = { id: users.length + 1, login, password, name };
-  users.push(newUser);
-  localStorage.setItem('currentUser', JSON.stringify(newUser));
-  return { success: true, user: newUser };
+
+  return data;
 }
 
 export function logoutUser() {

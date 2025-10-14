@@ -1,33 +1,26 @@
-import { products } from './mockDB.js';
+import { getProducts } from './mockDB.js';
 
-export function loadProducts() {
-  return products;
-}
-
-export function renderProductCard(product) {
-  return `
+export async function renderProductList(container) {
+  const list = await getProducts();
+  container.innerHTML = list.map(product => `
     <div class="kartochka card" data-id="${product.id}">
       <img src="${product.image}" alt="${product.name}">
       <h2>${product.name}</h2>
-      <p class="price">${(product.price).toFixed(0)} ₽</p>
+      <p class="price">${product.price} ₽</p>
       <button>Добавить в корзину</button>
     </div>
-  `;
-}
-
-export function renderProductList(container) {
-  const list = loadProducts();
-  container.innerHTML = list.map(renderProductCard).join('');
+  `).join('');
 
   container.querySelectorAll('.kartochka.card').forEach(card => {
     card.addEventListener('click', (e) => {
       if (e.target.tagName.toLowerCase() === 'button') return;
       const productId = card.dataset.id;
-      window.location.href = `./product.html?id=${productId}`;
+      window.location.href = `product.html?id=${productId}`;
     });
   });
-}
+};
 
-export function getProductById(id) {
+export async function getProductById(id) {
+  const products = await getProducts();
   return products.find(p => p.id == id);
 }

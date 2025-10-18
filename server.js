@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
 const app = express();
 
 app.use(express.json());
@@ -9,8 +10,21 @@ app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 app.use('/html', express.static(path.join(__dirname, 'html')));
 app.use('/server', express.static(path.join(__dirname, 'server')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const dataFile = path.join(__dirname, 'server', 'data.json');
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + file.originalname.replace(/\s+/g, '_');
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage });
 
 app.get('../server/', (req, res) => {
   if (!fs.existsSync(dataFile)) return res.json([]);
@@ -175,6 +189,15 @@ app.put('/api/products/:id', (req, res) => {
   fs.writeFileSync(productsFile, JSON.stringify(products, null, 2), 'utf8');
 
   res.json({ success: true, product: products[index] });
+});
+
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, error: 'Файл не получен' });
+  }
+
+  const filePath = '/uploads/' + req.file.filename;
+  res.json({ success: true, path: filePath });
 });
 
 app.delete('/api/products/:id', (req, res) => {

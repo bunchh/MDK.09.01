@@ -47,9 +47,9 @@ function attachEditHandlers() {
 
       btn.textContent = '✅';
       const cancelBtn = document.createElement('button');
-cancelBtn.textContent = '❌';
-cancelBtn.classList.add('btn-cancel');
-btn.parentElement.appendChild(cancelBtn);
+      cancelBtn.textContent = '❌';
+      cancelBtn.classList.add('btn-cancel');
+      btn.parentElement.appendChild(cancelBtn);
 
       btn.onclick = async () => {
         const newLogin = loginTd.querySelector('input').value.trim();
@@ -98,11 +98,11 @@ async function loadUsers() {
       <td class="td-name">${u.name || '-'}</td>
       <td class="td-role">${u.role}</td>
       <td>
-        <button class="btn-edit">✏️</button>
-        <button class="btn-delete">🗑️</button>
+        <button class="btn-edit" data-id="${u.id}">✏️</button>
+        <button class="btn-delete" data-id="${u.id}">🗑️</button>
       </td>
     </tr>
-  `).join('');
+`).join('');
 
   attachDeleteHandlers();
   attachEditHandlers();
@@ -160,10 +160,12 @@ function attachProductEditHandlers() {
       descTd.innerHTML = `<input value="${oldDesc}" />`;
       priceTd.innerHTML = `<input type="number" value="${oldPrice}" />`;
       imageTd.innerHTML = `
-        <input value="${oldImage}" />
-        <br>
-        <img src="${oldImage}" alt="preview" width="50">
-      `;
+      <label class="custom-file-upload">
+        Выберите файлы
+      <input type="file" accept="image/*" class="edit-image-file" hidden>
+      </label>
+      <img src="${oldImage}" alt="preview" width="50">
+`;
 
       const imgPreview = imageTd.querySelector('img');
       const imageInput = imageTd.querySelector('input');
@@ -175,20 +177,46 @@ function attachProductEditHandlers() {
       btn.textContent = '✅';
       const cancelBtn = document.createElement('button');
       cancelBtn.textContent = '❌';
+      cancelBtn.classList.add('btn-cancel');
       btn.parentElement.appendChild(cancelBtn);
 
       btn.onclick = async () => {
         const newName = nameTd.querySelector('input').value.trim();
         const newDesc = descTd.querySelector('input').value.trim();
         const newPrice = parseFloat(priceTd.querySelector('input').value);
-        const newImage = imageTd.querySelector('input').value.trim();
+        const fileInput = imageTd.querySelector('.edit-image-file');
+        const file = fileInput.files[0];
 
         if (!newName || isNaN(newPrice)) return alert('Название и цена обязательны');
+
+        let imagePath = oldImage;
+
+        if (file) {
+          const formData = new FormData();
+          formData.append('image', file);
+
+          const uploadRes = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+          });
+
+          const uploadData = await uploadRes.json();
+          if (!uploadData.success) {
+            return alert('Ошибка загрузки файла: ' + uploadData.error);
+          }
+
+          imagePath = uploadData.path;
+        }
 
         const res = await fetch(`/api/products/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: newName, description: newDesc, price: newPrice, image: newImage })
+          body: JSON.stringify({
+            name: newName,
+            description: newDesc,
+            price: newPrice,
+            image: imagePath
+          })
         });
 
         const data = await res.json();
@@ -251,14 +279,31 @@ document.getElementById('addProductBtn').addEventListener('click', async () => {
   const name = document.getElementById('productName').value.trim();
   const description = document.getElementById('productDescription').value.trim();
   const price = parseFloat(document.getElementById('productPrice').value);
-  const image = document.getElementById('productImage').value.trim();
+  const fileInput = document.getElementById('productImageFile');
+  const file = fileInput.files[0];
 
   if (!name || isNaN(price)) return alert('Введите название и корректную цену');
+  if (!file) return alert('Выберите картинку');
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const uploadRes = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData
+  });
+  const uploadData = await uploadRes.json();
+
+  if (!uploadData.success) {
+    return alert('Ошибка загрузки файла: ' + uploadData.error);
+  }
+
+  const imagePath = uploadData.path;
 
   const res = await fetch('/api/products', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, description, price, image })
+    body: JSON.stringify({ name, description, price, image: imagePath })
   });
 
   const data = await res.json();
@@ -267,7 +312,7 @@ document.getElementById('addProductBtn').addEventListener('click', async () => {
     document.getElementById('productName').value = '';
     document.getElementById('productDescription').value = '';
     document.getElementById('productPrice').value = '';
-    document.getElementById('productImage').value = '';
+    fileInput.value = '';
     loadProducts();
   } else {
     alert('Ошибка: ' + data.error);
